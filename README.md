@@ -1,2 +1,2 @@
 # processor
-flume-kafka-sink     meaasge preprocessor
+flume-kafka-sink     message preprocessor
