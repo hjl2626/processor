@@ -1,10 +1,12 @@
 package com.iot.flume.processor.impl;
 
 import com.iot.flume.processor.MessagePreprocessor;
+import com.iot.flume.sink.KafkaSinkConstants;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 /**
  * Created by hjl on 2016/8/26.
@@ -30,17 +32,23 @@ public class SimpleMessagePreprocessor implements MessagePreprocessor {
     }
 
 
-    public String extractTopic(Event event, Context context) {
-        String app = event.getHeaders().get("app");
-        String type = event.getHeaders().get("type");
-        if (type == null) {
-            if (context.getString("others") == null) {
-                return app + "." + "others";
+    public String extractTopic(Event event, Context context) throws UnsupportedEncodingException {
+        String eventTopic;
+        String default_type = context.getString(KafkaSinkConstants.TYPE_KEY, KafkaSinkConstants.DEFAULT_TYPE);
+        String default_topic = context.getString(KafkaSinkConstants.TOPIC, KafkaSinkConstants.DEFAULT_TOPIC);
+        Map<String,String> headers = event.getHeaders();
+        String type = headers.get("type");
+        String app = headers.get("app");
+        if (app == null && type == null) {
+            eventTopic = default_topic;
+        } else {
+            if (null == type) {
+                eventTopic = app + "." + default_type;
             } else {
-                return app + "." + context.getString("others");
+                eventTopic = app + "." + type;
             }
         }
-        return app + "." + type;
+        return eventTopic;
     }
 
     public String transformMessage(Event event, Context context) throws UnsupportedEncodingException {
